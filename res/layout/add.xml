@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/MainFrame"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+
+	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	    android:layout_width="fill_parent"
+	    android:layout_height="fill_parent"
+	    android:orientation="vertical" >
+	
+	    <EditText
+	        android:id="@+id/editTextTitle"
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:hint="Title" >
+	
+	        <requestFocus />
+	    </EditText>
+	
+	    <EditText
+	        android:id="@+id/editTextDescription"
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:height="140dp"
+	        android:hint="Description"
+	        android:inputType="textMultiLine" />
+		<LinearLayout  
+		    android:layout_width="match_parent"
+		    android:layout_height="wrap_content"
+		    android:orientation="horizontal">  
+		    <Button
+		        android:id="@+id/buttonSubmit"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:text="Submit"
+		        android:layout_weight="1" />
+		
+		    <Button
+		        android:id="@+id/btnAddPhoto"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:text="@string/strAddPhoto"
+		        android:layout_weight="1" />
+		    <Button
+		        android:id="@+id/btnCamera"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:text="Cam"
+		        android:layout_weight="1" />
+		</LinearLayout>		<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+		        android:id="@+id/ScrollView01" 
+		        android:layout_height="wrap_content"
+		        android:layout_width="fill_parent" >
+		    <LinearLayout
+		        android:id="@+id/rootLayout"
+		        android:layout_width="match_parent"
+		        android:layout_height="wrap_content"
+		        android:orientation="vertical" >
+		
+		    </LinearLayout>
+		</ScrollView>
+	</LinearLayout>
+</FrameLayout>

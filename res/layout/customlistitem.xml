@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:orientation="vertical"
+  android:layout_width="fill_parent"
+  android:layout_height="fill_parent" android:weightSum="1">
+    <RelativeLayout android:layout_width="fill_parent" android:id="@+id/relativeLayout1" android:layout_height="wrap_content">
+        <android.gesture.GestureOverlayView android:layout_height="wrap_content" android:id="@+id/gestureOverlayView1" android:layout_width="wrap_content" android:layout_alignParentTop="true" android:layout_alignParentRight="true" android:layout_alignParentLeft="true">
+            <LinearLayout android:orientation="horizontal" android:layout_width="fill_parent" android:id="@+id/linearLayout2" android:layout_height="wrap_content">
+                <LinearLayout android:orientation="horizontal" android:weightSum="1" android:layout_width="260dp" android:id="@+id/linearLayout1" android:layout_height="wrap_content" android:baselineAligned="false" android:layout_weight="0.32">
+                    <CheckBox android:id="@+id/sListCheckbox"  android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_weight="0.32" ></CheckBox>
+                    <TextView android:text="TextView" android:id="@+id/sListText"  android:layout_width="212dp" android:ems="15" android:layout_gravity="center" android:textAppearance="?android:attr/textAppearanceLarge" android:singleLine="true" android:layout_height="wrap_content" android:layout_weight="0.32"></TextView>
+                </LinearLayout>
+                <ImageView android:paddingRight="0dp" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center_vertical" android:layout_weight="0.32" android:id="@+id/imageView1" ></ImageView>
+            </LinearLayout>
+        </android.gesture.GestureOverlayView>
+    </RelativeLayout>
+    
+</LinearLayout>
