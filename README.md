@@ -1,7 +1,7 @@
 #What is Mobi Blogger
 <a href="http://netmera.com">Netmera</a> Platform is a cloud platform (PaaS) optimized for mobile applications. Netmera offers a cloud based content &amp; data repository. With simple APIs and mobile SDKs it is easy to store, retrieve, search and query data &amp; content on the cloud.
 Mobi Blogger is a sample mobile application, developed for android systems, and uses Netmera APIs for server side interactions. It is a basic mobile blogger application, where users can add, edit, display and delete their blogs with server side operations. Since this is a sample project, the users may manage text and photo type contents.
-Usage
+#Usage
 
 	private void initAPI(){
 		NetmeraClient.init(getApplicationContext(), GeneralConstants.SECURITY_KEY);
