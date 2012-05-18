@@ -164,33 +164,33 @@ public class AddContent extends Activity implements OnClickListener{
 		startActivityForResult(cameraIntent, CAMERA_PIC_REQUEST);
 	}
 
-public int addCc(String titleText, String descriptionText){
-	//adding new blog operation
-	//create a content context object with 'mobiBlogger' table name
-	ContentContext cc = new ContentContext(GeneralConstants.DATA_TABLE_NAME);
-	try {
-		//add title and description to content context object
-		cc.add(GeneralConstants.KEY_TITLE, title.getText().toString());
-		cc.add(GeneralConstants.KEY_DESCRIPTION, description.getText().toString());
-		//add photos, each with a key 'file[photoNumber]'
-		if(photoPaths.size() > 0) {
-			for(int i = 0 ; i < photoPaths.size() ; i++) {
-				String path = photoPaths.get(i);
-				byte[] bytes = HttpUtils.toByteArray(new File (path));	
-				NetmeraMedia file = new NetmeraMedia(bytes);
-				cc.add(GeneralConstants.KEY_PHOTOS + i, file);
-			}					
+	public int addCc(String titleText, String descriptionText){
+		//adding new blog operation
+		//create a content context object with 'mobiBlogger' table name
+		ContentContext cc = new ContentContext(GeneralConstants.DATA_TABLE_NAME);
+		try {
+			//add title and description to content context object
+			cc.add(GeneralConstants.KEY_TITLE, title.getText().toString());
+			cc.add(GeneralConstants.KEY_DESCRIPTION, description.getText().toString());
+			//add photos, each with a key 'file[photoNumber]'
+			if(photoPaths.size() > 0) {
+				for(int i = 0 ; i < photoPaths.size() ; i++) {
+					String path = photoPaths.get(i);
+					byte[] bytes = HttpUtils.toByteArray(new File (path));	
+					NetmeraMedia file = new NetmeraMedia(bytes);
+					cc.add(GeneralConstants.KEY_PHOTOS + i, file);
+				}					
+			}
+			cc.create();
+			
+		} catch (NetmeraException e) {
+			e.printStackTrace();
+			Toast.makeText(this, "Error while saving data", Toast.LENGTH_SHORT).show();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-		cc.create();
-		
-	} catch (NetmeraException e) {
-		e.printStackTrace();
-		Toast.makeText(this, "Error while saving data", Toast.LENGTH_SHORT).show();
-	} catch (IOException e) {
-		e.printStackTrace();
+		return 100;
 	}
-	return 100;
-}
 	
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
