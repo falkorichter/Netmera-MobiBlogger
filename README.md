@@ -70,3 +70,6 @@ First the object to be edited is fetched, then the edit operation is just like a
 		byte[] bytes = HttpUtils.toByteArray(new File (path));	
 		NetmeraMedia file = new NetmeraMedia(bytes);
 		cc.add(GeneralConstants.KEY_PHOTOS, file);
+
+
+# TODO
