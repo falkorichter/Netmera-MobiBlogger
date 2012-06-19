@@ -12,5 +12,6 @@ public class GeneralConstants {
 	public static final String KEY_DESCRIPTION = "description";
 	public static final String KEY_PATH = "path";
 	public static final String KEY_PHOTOS = "file";
-	
+	public static final String KEY_LAT = "latitude";
+	public static final String KEY_LONG = "longitude";
 }

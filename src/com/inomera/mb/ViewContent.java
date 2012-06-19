@@ -142,7 +142,6 @@ public class ViewContent extends Activity implements OnClickListener {
 			while(ctx.getContent().getData().get("file"+mediaCount) != null) {
 				if (ctx.getContent().getData().get("file"+mediaCount).length() != 7) {
 					NetmeraMedia media = ctx.getNetmeraMedia("file" + mediaCount);
-					String url = media.getUrl(NetmeraMedia.PhotoSize.SMALL);
 					byte[] imageBytes = media.getData();
 					Bitmap bmp = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
 					images.add(bmp);

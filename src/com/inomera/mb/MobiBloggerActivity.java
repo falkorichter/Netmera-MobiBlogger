@@ -53,11 +53,13 @@ public class MobiBloggerActivity extends Activity implements OnItemClickListener
 	private static final int RETURN_CODE_ADD = 1111; 
 	private static final int RETURN_CODE_EDIT = 2222;
 	private static final int RETURN_CODE_VIEW= 3333;
+	private static final int RETURN_CODE_LOCATION= 4444;
 	
 	private Button searchButton;
 	private EditText editText;
 	private ListView listView;
 	private Button btnAdd;
+	private Button btnLocation;
 	
 	private List<ContentContext> ccList = null;	
 	private ArrayList<String> listArray = new ArrayList<String>();	
@@ -84,6 +86,9 @@ public class MobiBloggerActivity extends Activity implements OnItemClickListener
 		
 		btnAdd = (Button) findViewById(R.id.btnAdd);
 		btnAdd.setOnClickListener(this);
+		
+		btnLocation = (Button) findViewById(R.id.btnLocation);
+		btnLocation.setOnClickListener(this);
     }
     
     @Override
@@ -105,6 +110,7 @@ public class MobiBloggerActivity extends Activity implements OnItemClickListener
     	
     	NetmeraClient.init(getApplicationContext(), GeneralConstants.SECURITY_KEY);
     	ContentService cs = new ContentService(GeneralConstants.DATA_TABLE_NAME);
+    	cs.setMax(100);
     	
     	try {
 			ccList = cs.search();
@@ -145,7 +151,10 @@ public class MobiBloggerActivity extends Activity implements OnItemClickListener
 		} else if(arg0 == btnAdd) {
 			Intent intent = new Intent(MobiBloggerActivity.this, AddContent.class);
 			startActivityForResult(intent, RETURN_CODE_ADD);
-		}		
+		} else if(arg0 == btnLocation) {
+			Intent intent = new Intent(MobiBloggerActivity.this, LocationSearch.class);
+			startActivityForResult(intent, RETURN_CODE_LOCATION);
+		}
 	}
 
 	@Override
@@ -154,10 +163,6 @@ public class MobiBloggerActivity extends Activity implements OnItemClickListener
 			intent.putExtra(GeneralConstants.KEY_PATH, ccList.get(arg2).getPath());
 			startActivityForResult(intent , RETURN_CODE_VIEW);		
 	}
-	
-	
-	
-	
 	
 	private void updateList(){
     	
