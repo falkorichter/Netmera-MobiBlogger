@@ -35,11 +35,21 @@
         </LinearLayout>
 
     </RelativeLayout>
+    <LinearLayout
+            android:id="@+id/linearLayout2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" >
+    
      <Button
                 android:id="@+id/btnAdd"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Add New Blog" />
+                android:text="Add New Blog" />
+     <Button
+            android:id="@+id/btnLocation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Location Search" />    </LinearLayout>
                 <ListView
                     android:id="@+id/listView1"
                     android:layout_width="fill_parent"
