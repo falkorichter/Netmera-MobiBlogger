@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <Spinner
+        android:id="@+id/distances"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:orientation="horizontal" >
+    <Button
+        android:id="@+id/btnLocationSearch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Circular Search" />
+    <Button
+        android:id="@+id/btnOpenSquare"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Box Search" />
+    </LinearLayout>
+    
+    
+    <com.google.android.maps.MapView
+	    xmlns:android="http://schemas.android.com/apk/res/android"
+	    android:id="@+id/mapview"
+	    android:layout_width="fill_parent"
+	    android:layout_height="fill_parent"
+	    android:clickable="true"
+	    android:apiKey="02Afch4qLheNZv9nTxEP7AIC-RNcOJtyphmx8fA"
+	/>
+
+    <ListView
+        android:id="@+id/lvLocationSearch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+    </ListView>
+
+</LinearLayout>

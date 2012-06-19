@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <com.google.android.maps.MapView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/mapviewsquare"
+        android:layout_width="fill_parent"
+        android:layout_height="240dp"
+        android:apiKey="02Afch4qLheNZv9nTxEP7AIC-RNcOJtyphmx8fA"
+        android:clickable="true" />
+    
+    <Button
+        android:id="@+id/btnSquareSearch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Search" />
+
+</LinearLayout>
