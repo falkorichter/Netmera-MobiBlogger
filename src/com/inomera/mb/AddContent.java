@@ -56,6 +56,7 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -68,6 +69,7 @@ import com.netmera.mobile.NetmeraContent;
 import com.netmera.mobile.NetmeraException;
 import com.netmera.mobile.NetmeraGeoLocation;
 import com.netmera.mobile.NetmeraMedia;
+import com.netmera.mobile.NetmeraUser;
 import com.netmera.mobile.util.HttpUtils;
 
 public class AddContent extends Activity implements OnClickListener {
@@ -85,6 +87,7 @@ public class AddContent extends Activity implements OnClickListener {
 	private static final int CAMERA_PIC_REQUEST = 1337;
 
 	// setting UI elements
+	private CheckBox isPrivateCheckBox;
 	private Button submitButton;
 	private EditText title;
 	private EditText description;
@@ -136,8 +139,7 @@ public class AddContent extends Activity implements OnClickListener {
 			}
 		};
 
-		// Register the listener with the Location Manager to receive location
-		// updates
+		// Register the listener with the Location Manager to receive location updates
 		locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
 	}
 
@@ -146,8 +148,8 @@ public class AddContent extends Activity implements OnClickListener {
 	}
 
 	@Override
-	public void onClick(View v) {
-		if (v == submitButton) {
+	public void onClick(View clickedItem) {
+		if (clickedItem == submitButton) {
 			progressBarStatus = 0;
 			// set progress dialog
 			final ProgressDialog dialog = ProgressDialog.show(this, "", "Loading", false);
@@ -156,7 +158,7 @@ public class AddContent extends Activity implements OnClickListener {
 					while (progressBarStatus < 100) {
 						// wait until the operation is complete
 						// add new blog
-						progressBarStatus = addCc(title.getText().toString(), description.getText().toString());
+						progressBarStatus = addBlog(title.getText().toString(), description.getText().toString());
 						progressBarHandler.post(new Runnable() {
 							public void run() {
 							}
@@ -184,11 +186,11 @@ public class AddContent extends Activity implements OnClickListener {
 					}
 				};
 			}).start();
-		} else if (v == btnPhoto) {
+		} else if (clickedItem == btnPhoto) {
 			// open photo gallery
 			Intent imageInt = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
 			startActivityForResult(imageInt, PHOTO_REQUEST);
-		} else if (v == camButton) {
+		} else if (clickedItem == camButton) {
 			// open phone camera
 			openDeviceCam();
 		}
@@ -206,19 +208,32 @@ public class AddContent extends Activity implements OnClickListener {
 		startActivityForResult(cameraIntent, CAMERA_PIC_REQUEST);
 	}
 
-	public int addCc(String titleText, String descriptionText) {
+	public int addBlog(String titleText, String descriptionText) {
 		// adding new blog operation
 		// create a content context object with 'mobiBlogger' table name
 		String address = getAddress();
-		NetmeraContent cc = new NetmeraContent(GeneralConstants.DATA_TABLE_NAME);
+		NetmeraContent netmeraContent = new NetmeraContent(GeneralConstants.DATA_TABLE_NAME);
 		// create a netmeraGeoLocationObject from latitude and longitude
 		NetmeraGeoLocation ngl = new NetmeraGeoLocation(latitude, longitude);
 		try {
 			// add title and description to content context object
-			cc.add(GeneralConstants.KEY_TITLE, title.getText().toString());
-			cc.add(GeneralConstants.KEY_DESCRIPTION, description.getText().toString());
-			cc.add("location", ngl);
-			cc.add("address", address);
+			isPrivateCheckBox = (CheckBox)findViewById(R.id.isPrivate);
+			if (isPrivateCheckBox.isChecked()) {
+				netmeraContent.add(GeneralConstants.KEY_PRIVACY, GeneralConstants.PRIVACY_PRIVATE);
+			} else {
+				netmeraContent.add(GeneralConstants.KEY_PRIVACY, GeneralConstants.PRIVACY_PUBLIC);
+			}
+			
+			NetmeraUser currentUser = NetmeraUser.getCurrentUser();
+			
+			if (currentUser != null) {
+				netmeraContent.add(GeneralConstants.KEY_OWNER, currentUser.getEmail());
+			}
+			
+			netmeraContent.add(GeneralConstants.KEY_TITLE, title.getText().toString());
+			netmeraContent.add(GeneralConstants.KEY_DESCRIPTION, description.getText().toString());
+			netmeraContent.add("location", ngl);
+			netmeraContent.add("address", address);
 
 			// add photos, each with a key 'file[photoNumber]'
 			if (photoPaths.size() > 0) {
@@ -226,11 +241,10 @@ public class AddContent extends Activity implements OnClickListener {
 					String path = photoPaths.get(i);
 					byte[] bytes = HttpUtils.toByteArray(new File(path));
 					NetmeraMedia file = new NetmeraMedia(bytes);
-					cc.add(GeneralConstants.KEY_PHOTOS + i, file);
+					netmeraContent.add(GeneralConstants.KEY_PHOTOS + i, file);
 				}
 			}
-			cc.create();
-
+			netmeraContent.create();
 		} catch (NetmeraException e) {
 			e.printStackTrace();
 			Toast.makeText(this, "Error while saving data", Toast.LENGTH_SHORT).show();

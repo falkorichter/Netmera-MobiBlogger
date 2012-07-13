@@ -24,21 +24,5 @@
         android:layout_height="wrap_content"
         android:text="Box Search" />
     </LinearLayout>
-    
-    
-    <com.google.android.maps.MapView
-	    xmlns:android="http://schemas.android.com/apk/res/android"
-	    android:id="@+id/mapview"
-	    android:layout_width="fill_parent"
-	    android:layout_height="fill_parent"
-	    android:clickable="true"
-	    android:apiKey="02Afch4qLheNZv9nTxEP7AIC-RNcOJtyphmx8fA"
-	/>
-
-    <ListView
-        android:id="@+id/lvLocationSearch"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
-    </ListView>
-
+    <com.google.android.maps.MapView android:id="@+id/mapview" android:layout_width="fill_parent" android:layout_height="fill_parent" xmlns:android="http://schemas.android.com/apk/res/android" android:apiKey="0fxTVBr4SZEDGhfiGS0ROzCvrh5zYAdNjC2TVEA" android:clickable="true"></com.google.android.maps.MapView>
 </LinearLayout>

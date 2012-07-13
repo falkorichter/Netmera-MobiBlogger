@@ -3,6 +3,45 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical" >
+
+    <RelativeLayout
+        android:id="@+id/relativeLayout2"
+        android:layout_width="match_parent"
+        android:layout_height="34dp" >
+
+		<AbsoluteLayout
+		    android:id="@+id/absoluteLayout"
+		    android:layout_width="188dp"
+		    android:layout_height="34dp" >
+
+		    <TextView
+		        android:id="@+id/emailText"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:layout_x="0dp"
+		        android:layout_y="0dp"
+		        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+		</AbsoluteLayout>
+
+        <Button
+            android:id="@+id/login"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:text="@string/login" />
+
+        <Button
+            android:layout_marginRight="5px"
+            android:id="@+id/register"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_toLeftOf="@+id/login"
+            android:text="@string/register" />
+
+    </RelativeLayout>
 
     <RelativeLayout
         android:id="@+id/relativeLayout1"
@@ -15,12 +54,13 @@
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_alignParentRight="true" >
-            <EditText
-                android:id="@+id/editText1"
+
+            <EditText
+                android:id="@+id/searchText"
                 android:layout_width="wrap_content"
-                android:hint="Search"
                 android:layout_height="wrap_content"
-                android:layout_weight="1.41" >
+                android:layout_weight="1.41"
+                android:hint="Search" >
 
                 <requestFocus />
             </EditText>
@@ -39,12 +79,14 @@
             android:id="@+id/linearLayout2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" >
-    
+    
      <Button
-                android:id="@+id/btnAdd"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Add New Blog" />
+         android:id="@+id/btnAdd"
+         android:layout_width="match_parent"
+         android:layout_height="wrap_content"
+         android:enabled="false"
+         android:text="Add New Blog" />
+
      <Button
             android:id="@+id/btnLocation"
             android:layout_width="match_parent"

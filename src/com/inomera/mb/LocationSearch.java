@@ -15,14 +15,11 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ListView;
 import android.widget.Spinner;
 
 import com.google.android.maps.GeoPoint;
@@ -37,14 +34,14 @@ import com.netmera.mobile.NetmeraContent;
 import com.netmera.mobile.NetmeraException;
 import com.netmera.mobile.NetmeraGeoLocation;
 import com.netmera.mobile.NetmeraService;
+import com.netmera.mobile.NetmeraUser;
 import com.readystatesoftware.mapviewballoons.BalloonItemizedOverlay;
 
-public class LocationSearch extends MapActivity implements OnItemClickListener, OnClickListener {
+public class LocationSearch extends MapActivity implements OnClickListener {
 
 	/** Called when the activity is first created. */
-	private Button searchBtn;
+	private Button circularSearchBtn;
 	private Spinner spinner;
-	private ListView listView;
 	private Button openSquareBtn;
 	private MapView mapView;
 
@@ -52,19 +49,21 @@ public class LocationSearch extends MapActivity implements OnItemClickListener, 
 
 	double latitude = 0;
 	double longitude = 0;
-	private ArrayList<String> listArray = new ArrayList<String>();
-	List<NetmeraContent> ccList = null;
-	Object selectedItem = 0;
-	GeoPoint globalGeoPoint;
-	LocationResult locationResult;
 	int distance = 0;
+	
+	List<NetmeraContent> globalNetmeraContentList = new ArrayList<NetmeraContent>();
+	GeoPoint globalGeoPoint;
+	
+	LocationResult locationResult;
 	LocationManager locationManager;
 	LocationListener locationListener;
+	
 	List<Overlay> mapOverlays;
-	Drawable drawable;
-	Drawable drawable2;
-	SimpleItemizedOverlay itemizedOverlay;
-	SimpleItemizedOverlay itemizedOverlay2;
+	Drawable redMarker;
+	Drawable greenMarker;
+	SimpleItemizedOverlay myLocationOverlay;
+	SimpleItemizedOverlay smeOverlay;
+	
 	List<String> pathList;
 	List<String> titleList;
 
@@ -78,8 +77,8 @@ public class LocationSearch extends MapActivity implements OnItemClickListener, 
 		// initializing UI elements
 		savedState = savedInstanceState;
 
-		searchBtn = (Button) findViewById(R.id.btnLocationSearch);
-		searchBtn.setOnClickListener(this);
+		circularSearchBtn = (Button) findViewById(R.id.btnLocationSearch);
+		circularSearchBtn.setOnClickListener(this);
 
 		openSquareBtn = (Button) findViewById(R.id.btnOpenSquare);
 		openSquareBtn.setOnClickListener(this);
@@ -89,14 +88,9 @@ public class LocationSearch extends MapActivity implements OnItemClickListener, 
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spinner.setAdapter(adapter);
 
-		listView = (ListView) findViewById(R.id.lvLocationSearch);
-		// Setting UI attributes
-		listView.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, listArray));
-		listView.setOnItemClickListener(this);
-
 		mapView = (MapView) findViewById(R.id.mapview);
 		mapView.setBuiltInZoomControls(true);
-
+		
 		locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
 		// Define a listener that responds to location updates
@@ -106,134 +100,156 @@ public class LocationSearch extends MapActivity implements OnItemClickListener, 
 				// provider.
 				latitude = location.getLatitude();
 				longitude = location.getLongitude();
-
+				
 				globalGeoPoint = new GeoPoint((int) (latitude * 1E6), (int) (longitude * 1E6));
 				locationManager.removeUpdates(locationListener);
 			}
 
 			public void onStatusChanged(String provider, int status, Bundle extras) {
+				
 			}
 
 			public void onProviderEnabled(String provider) {
+				
 			}
 
 			public void onProviderDisabled(String provider) {
+				
 			}
 		};
 
-		// Register the listener with the Location Manager to receive location
-		// updates
+		// Register the listener with the Location Manager to receive location updates
 		locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
 	}
 
 	@Override
-	public void onClick(View arg0) {
+	public void onClick(View clickedItem) {
 		// circular search
-		if (arg0 == searchBtn) {
+		if (clickedItem == circularSearchBtn) {
+			globalNetmeraContentList.clear();
+			
 			// if there is a overlay from previous search, clean it.
 			if (!mapView.getOverlays().isEmpty()) {
 				mapView.getOverlays().clear();
 				mapView.invalidate();
 			}
-			NetmeraService cs = new NetmeraService(GeneralConstants.DATA_TABLE_NAME);
-			Log.v("latitude", "" + latitude);
-			Log.v("longitude", "" + longitude);
-			NetmeraGeoLocation ngl = new NetmeraGeoLocation(latitude, longitude);
-
+			
 			// select circular search radius
+			if (spinner.getSelectedItem().toString().compareTo("1km") == 0) {
+				distance = 1;
+			} else if (spinner.getSelectedItem().toString().compareTo("3km") == 0) {
+				distance = 3;
+			} else if (spinner.getSelectedItem().toString().compareTo("5km") == 0) {
+				distance = 5;
+			} else if (spinner.getSelectedItem().toString().compareTo("10km") == 0) {
+				distance = 10;
+			}
+			
+			NetmeraGeoLocation ngl = new NetmeraGeoLocation(latitude, longitude);
+			
+			//TODO : spinner
+			if (NetmeraUser.getCurrentUser() != null) {
+				NetmeraService netmeraService = new NetmeraService(GeneralConstants.DATA_TABLE_NAME);
+				
+				netmeraService.whereEqual(GeneralConstants.KEY_PRIVACY, GeneralConstants.PRIVACY_PRIVATE);
+				netmeraService.whereEqual(GeneralConstants.KEY_OWNER, NetmeraUser.getCurrentUser().getEmail());
+				
+				try {
+					List<NetmeraContent> resultList = netmeraService.circleSearch(ngl, distance, "location");
+					
+					for (NetmeraContent netmeraContent : resultList) {
+						globalNetmeraContentList.add(netmeraContent);
+					}
+				} catch (NetmeraException e) {
+					e.printStackTrace();
+				}
+			} 
+			
+			NetmeraService netmeraService = new NetmeraService(GeneralConstants.DATA_TABLE_NAME);
+			netmeraService.whereEqual(GeneralConstants.KEY_PRIVACY, GeneralConstants.PRIVACY_PUBLIC);
+			
 			try {
-				if (spinner.getSelectedItem().toString().compareTo("1km") == 0) {
-					distance = 1;
-				} else if (spinner.getSelectedItem().toString().compareTo("3km") == 0) {
-					distance = 3;
-				} else if (spinner.getSelectedItem().toString().compareTo("5km") == 0) {
-					distance = 5;
-				} else if (spinner.getSelectedItem().toString().compareTo("10km") == 0) {
-					distance = 10;
-				}
-				// make circular search with only current location and radius
-				ccList = cs.circleSearch(ngl, distance, "location");
-
-				listArray.clear();
-				for (NetmeraContent cc : ccList) {
-					listArray.add(cc.getString(GeneralConstants.KEY_TITLE));
-				}
-
-				titleList = new ArrayList<String>();
-				pathList = new ArrayList<String>();
-				// create and place an overlay for current position of the user
-				mapOverlays = mapView.getOverlays();
-
-				drawable = getResources().getDrawable(R.drawable.marker);
-				itemizedOverlay = new SimpleItemizedOverlay(drawable, mapView);
-
-				GeoPoint point = new GeoPoint((int) (latitude * 1E6), (int) (longitude * 1E6));
-				OverlayItem overlayItem = new OverlayItem(point, "You Are Here", "");
-				itemizedOverlay.addOverlay(overlayItem);
-				mapOverlays.add(itemizedOverlay);
-
-				// second overlay
-				drawable2 = getResources().getDrawable(R.drawable.marker2);
-				itemizedOverlay2 = new SimpleItemizedOverlay(drawable2, mapView);
-
-				for (int i = 0; i < ccList.size(); i++) {
-					String descript = ccList.get(i).getString("description");
-					if (descript.length() > 10) {
-						descript = descript.substring(0, 10) + "...";
-					}
-					GeoPoint resultPoint = new GeoPoint((int) (Double.parseDouble(ccList.get(i).getString("location_netmera_mobile_latitude")) * 1E6),
-							(int) (Double.parseDouble(ccList.get(i).getString("location_netmera_mobile_longitude")) * 1E6));
-
-					OverlayItem resultOverlayItem = new OverlayItem(resultPoint, ccList.get(i).getString("title"), descript);
-					itemizedOverlay2.addOverlay(resultOverlayItem);
-					pathList.add(ccList.get(i).getPath());
-					titleList.add(ccList.get(i).getString("title"));
-				}
-
-				mapOverlays.add(itemizedOverlay2);
-
-				if (arg0 == null) {
-
-					final MapController mc = mapView.getController();
-					// mc.animateTo(point2);
-					mc.animateTo(point);
-					if (distance == 1) {
-						mc.setZoom(16);
-					} else if (distance == 3) {
-						mc.setZoom(15);
-					} else if (distance == 4) {
-						mc.setZoom(14);
-					} else if (distance == 10) {
-						mc.setZoom(13);
-					}
-				} else {
-
-				}
-
-				GeoPoint geoPoint = new GeoPoint((int) (latitude * 1E6), (int) (longitude * 1E6));
-				// set the zoom level according to search radius
-				MapController mapControll = mapView.getController();
-				mapView.setBuiltInZoomControls(true);
-				mapView.setStreetView(true);
-				if (distance == 1) {
-					mapControll.setZoom(15);
-				} else if (distance == 3) {
-					mapControll.setZoom(13);
-				} else if (distance == 5) {
-					mapControll.setZoom(12);
-				} else if (distance == 10) {
-					mapControll.setZoom(11);
-				}
-				mapControll.animateTo(geoPoint);
-
-				// drawing circle
-				if (globalGeoPoint != null) {
-					mapView.getOverlays().add(new MarkerOverlay());
+				List<NetmeraContent> resultList = netmeraService.circleSearch(ngl, distance, "location");
+				
+				for (NetmeraContent netmeraContent : resultList) {
+					globalNetmeraContentList.add(netmeraContent);
 				}
 			} catch (NetmeraException e) {
 				e.printStackTrace();
 			}
-		} else if (arg0 == openSquareBtn) {
+			
+			titleList = new ArrayList<String>();
+			pathList = new ArrayList<String>();
+			// create and place an overlay for current position of the user
+			mapOverlays = mapView.getOverlays();
+
+			redMarker = getResources().getDrawable(R.drawable.marker);
+			myLocationOverlay = new SimpleItemizedOverlay(redMarker, mapView);
+			
+			//my current location overlay
+			try {
+				GeoPoint point = new GeoPoint((int) (latitude * 1E6), (int) (longitude * 1E6));
+				OverlayItem overlayItem = new OverlayItem(point, "You Are Here", "");
+				myLocationOverlay.addOverlay(overlayItem);
+				mapOverlays.add(myLocationOverlay);
+			} catch (Exception e) {
+				System.out.println("latitude/longitude is null");
+			}
+			
+			//sme overlay
+			greenMarker = getResources().getDrawable(R.drawable.marker2);
+			smeOverlay = new SimpleItemizedOverlay(greenMarker, mapView);
+			
+			if (globalNetmeraContentList.size() != 0) {
+				try {
+					for (int i = 0; i < globalNetmeraContentList.size(); i++) {
+						String description = globalNetmeraContentList.get(i).getString("description");
+						if (description.length() > 10) {
+							description = description.substring(0, 10) + "...";
+						}
+						
+						NetmeraGeoLocation geoLoc = globalNetmeraContentList.get(i).getNetmeraGeoLocation("location");
+						
+						GeoPoint resultPoint = new GeoPoint((int) (geoLoc.getLatitude() * 1E6), (int) (geoLoc.getLongitude() * 1E6));
+
+						OverlayItem resultOverlayItem = new OverlayItem(resultPoint, globalNetmeraContentList.get(i).getString("title"), description);
+						smeOverlay.addOverlay(resultOverlayItem);
+						pathList.add(globalNetmeraContentList.get(i).getPath());
+						titleList.add(globalNetmeraContentList.get(i).getString("title"));
+					} 
+				} catch (Exception e) {
+					//TODO : Toast
+					System.out.println("Circular search data is missing!");
+				}
+				try {
+					mapOverlays.add(smeOverlay);
+				} catch (Exception e){
+					System.out.println("Overlay add exception!");
+				}
+			}
+			
+			GeoPoint geoPoint = new GeoPoint((int) (latitude * 1E6), (int) (longitude * 1E6));
+			// set the zoom level according to search radius
+			MapController mapControll = mapView.getController();
+			mapView.setBuiltInZoomControls(true);
+
+			if (distance == 1) {
+				mapControll.setZoom(15);
+			} else if (distance == 3) {
+				mapControll.setZoom(13);
+			} else if (distance == 5) {
+				mapControll.setZoom(12);
+			} else if (distance == 10) {
+				mapControll.setZoom(11);
+			}
+			mapControll.animateTo(geoPoint);
+
+			// drawing circle
+			if (globalGeoPoint != null) {
+				mapView.getOverlays().add(new MarkerOverlay());
+			}
+			
+		} else if (clickedItem == openSquareBtn) {
 			Intent intent = new Intent(LocationSearch.this, SquareSearch.class);
 			startActivityForResult(intent, SQUARESEARCH_REQUEST);
 		}
@@ -245,17 +261,15 @@ public class LocationSearch extends MapActivity implements OnItemClickListener, 
 		// result of square search
 		if (requestCode == SQUARESEARCH_REQUEST) {
 			if (resultCode == RESULT_OK) {
-				// show on map
-				Bundle b = data.getExtras();
+				Bundle bundle = data.getExtras();
 
-				int zoomLevel = b.getInt("zoomLevel");
-				int mapCenterLatitude = b.getInt("mapCenterLatitude");
-				int mapCenterLongitude = b.getInt("mapCenterLongitude");
+				int zoomLevel = bundle.getInt("zoomLevel");
+				int mapCenterLatitude = bundle.getInt("mapCenterLatitude");
+				int mapCenterLongitude = bundle.getInt("mapCenterLongitude");
 				GeoPoint geoPoint = new GeoPoint(mapCenterLatitude, mapCenterLongitude);
 
 				MapController mapControll = mapView.getController();
 				mapView.setBuiltInZoomControls(true);
-				mapView.setStreetView(true);
 				mapControll.setZoom(zoomLevel);
 				mapControll.animateTo(geoPoint);
 				// clear map overlays from previous searches
@@ -263,50 +277,53 @@ public class LocationSearch extends MapActivity implements OnItemClickListener, 
 					mapView.getOverlays().clear();
 					mapView.invalidate();
 				}
+				
 				// print search results on map
-				if (b.getInt("resultSize") > 0) {
+				if (bundle.getInt("resultSize") > 0) {
 					titleList = new ArrayList<String>();
 					pathList = new ArrayList<String>();
 
-					int totalResults = b.getInt("resultSize");
+					int totalResults = bundle.getInt("resultSize");
 
 					mapOverlays = mapView.getOverlays();
 
-					drawable = getResources().getDrawable(R.drawable.marker);
-					itemizedOverlay = new SimpleItemizedOverlay(drawable, mapView);
+					redMarker = getResources().getDrawable(R.drawable.marker);
+					myLocationOverlay = new SimpleItemizedOverlay(redMarker, mapView);
 
 					GeoPoint point = new GeoPoint((int) (latitude * 1E6), (int) (longitude * 1E6));
 					OverlayItem overlayItem = new OverlayItem(point, "You Are Here", "");
-					itemizedOverlay.addOverlay(overlayItem);
-					mapOverlays.add(itemizedOverlay);
-
+					myLocationOverlay.addOverlay(overlayItem);
+					mapOverlays.add(myLocationOverlay);
+					
 					// second overlay
-
-					drawable2 = getResources().getDrawable(R.drawable.marker2);
-					itemizedOverlay2 = new SimpleItemizedOverlay(drawable2, mapView);
-
-					for (int i = 0; i < totalResults; i++) {
-						String descript = (b.getString("resultDescription" + i));
-						if (descript.length() > 10) {
-							descript = descript.substring(0, 10) + "...";
+					greenMarker = getResources().getDrawable(R.drawable.marker2);
+					smeOverlay = new SimpleItemizedOverlay(greenMarker, mapView);
+					
+					try {
+						for (int i = 0; i < totalResults; i++) {
+							String description = (bundle.getString("resultDescription" + i));
+							if (description.length() > 10) {
+								description = description.substring(0, 10) + "...";
+							}
+							GeoPoint resultPoint = new GeoPoint((int) (bundle.getDouble("resultLatitude" + i) * 1E6), (int) (bundle.getDouble("resultLongitude" + i) * 1E6));
+							
+							OverlayItem resultOverlayItem = new OverlayItem(resultPoint, bundle.getString("resultTitle" + i), description);
+							smeOverlay.addOverlay(resultOverlayItem);
+							pathList.add(bundle.getString("resultPath" + i));
+							titleList.add(bundle.getString("resultTitle" + i));
 						}
-						GeoPoint resultPoint = new GeoPoint((int) (Double.parseDouble(b.getString("resultLatitude" + i)) * 1E6), (int) (Double.parseDouble(b
-								.getString("resultLongitude" + i)) * 1E6));
-						OverlayItem resultOverlayItem = new OverlayItem(resultPoint, b.getString("resultTitle" + i), descript);
-						itemizedOverlay2.addOverlay(resultOverlayItem);
-						pathList.add(b.getString("resultPath" + i));
-						titleList.add(b.getString("resultTitle" + i));
+					} catch (Exception e) {
+						System.out.println("Box search data is missing!");
 					}
-
-					mapOverlays.add(itemizedOverlay2);
+					
+					try {
+						mapOverlays.add(smeOverlay);
+					} catch (Exception e) {
+						System.out.println("Overlay add exception!");
+					}
 				}
 			}
 		}
-	}
-
-	@Override
-	public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-
 	}
 
 	public abstract class LocationResult {
@@ -316,34 +333,6 @@ public class LocationSearch extends MapActivity implements OnItemClickListener, 
 	@Override
 	protected boolean isRouteDisplayed() {
 		return false;
-	}
-
-	public class CircleOverlay extends Overlay {
-
-		Context context;
-		double mLat;
-		double mLon;
-
-		public CircleOverlay(Context _context, double _lat, double _lon) {
-			context = _context;
-			mLat = _lat;
-			mLon = _lon;
-		}
-
-		public void draw(Canvas canvas, MapView mapView, boolean shadow) {
-			super.draw(canvas, mapView, shadow);
-			Projection projection = mapView.getProjection();
-			Point pt = new Point();
-			GeoPoint geo = new GeoPoint((int) (latitude * 1e6), (int) (longitude * 1e6));
-			projection.toPixels(geo, pt);
-			float circleRadius = 100;
-			Paint innerCirclePaint;
-			innerCirclePaint = new Paint();
-			innerCirclePaint.setARGB(255, 255, 255, 255);
-			innerCirclePaint.setAntiAlias(true);
-			innerCirclePaint.setStyle(Paint.Style.FILL);
-			canvas.drawCircle((float) pt.x, (float) pt.y, circleRadius, innerCirclePaint);
-		}
 	}
 
 	public class MarkerOverlay extends Overlay {
@@ -378,10 +367,7 @@ public class LocationSearch extends MapActivity implements OnItemClickListener, 
 					distanceCoefficient = 10;
 				}
 
-				GeoPoint newGeos = new GeoPoint((int) (globalGeoPoint.getLatitudeE6() + distanceCoefficient * (1E6 / 111)), (int) (globalGeoPoint.getLongitudeE6())); // adjust
-																																										// your
-																																										// radius
-																																										// accordingly
+				GeoPoint newGeos = new GeoPoint((int) (globalGeoPoint.getLatitudeE6() + distanceCoefficient * (1E6 / 111)), (int) (globalGeoPoint.getLongitudeE6())); // adjust  your  radius accordingly
 				Point pt2 = new Point();
 				projection.toPixels(newGeos, pt2);
 				float circleRadius = Math.abs(pt2.y - pt.y);
@@ -424,7 +410,12 @@ public class LocationSearch extends MapActivity implements OnItemClickListener, 
 		public int size() {
 			return m_overlays.size();
 		}
-
+		
+		@Override
+		public boolean onTouchEvent(MotionEvent event, MapView mapView) {
+			return super.onTouchEvent(event, mapView);
+		}
+		
 		@Override
 		protected boolean onBalloonTap(int index, OverlayItem item) {
 			String path = "";

@@ -1,5 +1,6 @@
 package com.inomera.mb;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Intent;
@@ -20,6 +21,7 @@ import com.netmera.mobile.NetmeraContent;
 import com.netmera.mobile.NetmeraException;
 import com.netmera.mobile.NetmeraGeoLocation;
 import com.netmera.mobile.NetmeraService;
+import com.netmera.mobile.NetmeraUser;
 
 public class SquareSearch extends MapActivity implements OnClickListener {
 
@@ -34,7 +36,7 @@ public class SquareSearch extends MapActivity implements OnClickListener {
 	Drawable drawable;
 	Drawable drawable2;
 
-	List<NetmeraContent> ccList = null;
+	List<NetmeraContent> globalNetmeraContentList = new ArrayList<NetmeraContent>();
 
 	@Override
 	protected void onCreate(Bundle arg0) {
@@ -53,8 +55,8 @@ public class SquareSearch extends MapActivity implements OnClickListener {
 	}
 
 	@Override
-	public void onClick(View v) {
-		if (v == btnSearch) {
+	public void onClick(View clickedItem) {
+		if (clickedItem == btnSearch) {
 			// get corner points from the map
 			Projection proj = mapView.getProjection();
 			GeoPoint topLeft = proj.fromPixels(0, 0);
@@ -68,27 +70,54 @@ public class SquareSearch extends MapActivity implements OnClickListener {
 
 			NetmeraGeoLocation firstPoint = new NetmeraGeoLocation(topLat, topLon);
 			NetmeraGeoLocation secondPoint = new NetmeraGeoLocation(bottomLat, bottomLon);
-
-			NetmeraService cs = new NetmeraService(GeneralConstants.DATA_TABLE_NAME);
+			
+			//TODO : spinner ?
+			if (NetmeraUser.getCurrentUser() != null) {
+				NetmeraService netmeraService = new NetmeraService(GeneralConstants.DATA_TABLE_NAME);
+				
+				netmeraService.whereEqual(GeneralConstants.KEY_PRIVACY, GeneralConstants.PRIVACY_PRIVATE);
+				netmeraService.whereEqual(GeneralConstants.KEY_OWNER, NetmeraUser.getCurrentUser().getEmail());
+				
+				try {
+					List<NetmeraContent> resultList = netmeraService.boxSearch(firstPoint, secondPoint, "location");
+					
+					for (NetmeraContent netmeraContent : resultList) {
+						globalNetmeraContentList.add(netmeraContent);
+					}
+				} catch (NetmeraException e) {
+					e.printStackTrace();
+				}
+			} 
+			
+			NetmeraService netmeraService = new NetmeraService(GeneralConstants.DATA_TABLE_NAME);
+			netmeraService.whereEqual(GeneralConstants.KEY_PRIVACY, GeneralConstants.PRIVACY_PUBLIC);
+			
 			try {
-				// perform square search from those 2 points
-				ccList = cs.boxSearch(firstPoint, secondPoint, "location");
+				List<NetmeraContent> resultList = netmeraService.boxSearch(firstPoint, secondPoint, "location");
+				
+				for (NetmeraContent netmeraContent : resultList) {
+					globalNetmeraContentList.add(netmeraContent);
+				}
 			} catch (NetmeraException e) {
 				e.printStackTrace();
 			}
+			
 			Intent intent = new Intent();
+			
 			intent.putExtra("zoomLevel", mapView.getZoomLevel());
 			intent.putExtra("mapCenterLatitude", mapView.getMapCenter().getLatitudeE6());
 			intent.putExtra("mapCenterLongitude", mapView.getMapCenter().getLongitudeE6());
-
-			intent.putExtra("resultSize", ccList.size());
-			for (int i = 0; i < ccList.size(); i++) {
+			intent.putExtra("resultSize", globalNetmeraContentList.size());
+			
+			for (int i = 0; i < globalNetmeraContentList.size(); i++) {
 				try {
-					intent.putExtra("resultTitle" + i, ccList.get(i).getString("title"));
-					intent.putExtra("resultPath" + i, ccList.get(i).getPath());
-					intent.putExtra("resultDescription" + i, ccList.get(i).getString("description"));
-					intent.putExtra("resultLatitude" + i, ccList.get(i).getDouble("location_netmera_mobile_latitude"));
-					intent.putExtra("resultLongitude" + i, ccList.get(i).getDouble("location_netmera_mobile_longitude"));
+					intent.putExtra("resultTitle" + i, globalNetmeraContentList.get(i).getString("title"));
+					intent.putExtra("resultPath" + i, globalNetmeraContentList.get(i).getPath());
+					intent.putExtra("resultDescription" + i, globalNetmeraContentList.get(i).getString("description"));
+					NetmeraGeoLocation geoLoc = globalNetmeraContentList.get(i).getNetmeraGeoLocation("location");
+					
+					intent.putExtra("resultLatitude" + i, geoLoc.getLatitude());
+					intent.putExtra("resultLongitude" + i, geoLoc.getLongitude());
 				} catch (NetmeraException e) {
 					e.printStackTrace();
 				}
@@ -98,7 +127,5 @@ public class SquareSearch extends MapActivity implements OnClickListener {
 
 			finish();
 		}
-
 	}
-
 }

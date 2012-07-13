@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/ScrollView01"
+ android:layout_width="wrap_content" android:layout_below="@+id/ImageView01"
+ android:layout_height="420px">    <LinearLayout 
+        android:id="@+id/linearLayout1"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical" >
+
+        <TextView
+            android:id="@+id/textView1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/email"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <EditText
+            android:id="@+id/registerEmail"
+            android:layout_width="280dp"
+            android:layout_height="wrap_content" >
+
+            <requestFocus />
+        </EditText>
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/nickname"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <EditText
+            android:id="@+id/registerNickname"
+            android:layout_width="280dp"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/textView3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/password"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <EditText
+            android:id="@+id/registerPassword"
+            android:layout_width="280dp"
+            android:layout_height="wrap_content" />
+        
+		<AbsoluteLayout
+		    android:layout_width="match_parent"
+		    android:layout_height="140dp" >
+
+			<Button
+			    android:id="@+id/registerCancel"
+			    android:layout_width="wrap_content"
+			    android:layout_height="wrap_content"
+			    android:layout_x="210dp"
+			    android:layout_y="0dp"
+			    android:text="@string/cancel" />
+
+			<Button
+			    android:id="@+id/registerComplete"
+			    android:layout_width="wrap_content"
+			    android:layout_height="wrap_content"
+			    android:layout_x="139dp"
+			    android:layout_y="0dp"
+			    android:text="@string/register" />
+		
+		</AbsoluteLayout>
+    </LinearLayout>
+</ScrollView>

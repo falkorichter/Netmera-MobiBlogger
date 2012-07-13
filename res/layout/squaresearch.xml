@@ -9,7 +9,7 @@
         android:id="@+id/mapviewsquare"
         android:layout_width="fill_parent"
         android:layout_height="240dp"
-        android:apiKey="02Afch4qLheNZv9nTxEP7AIC-RNcOJtyphmx8fA"
+        android:apiKey="0fxTVBr4SZEDGhfiGS0ROzCvrh5zYAdNjC2TVEA"
         android:clickable="true" />
     
     <Button

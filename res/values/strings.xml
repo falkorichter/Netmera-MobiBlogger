@@ -12,5 +12,13 @@
         <item>5km</item>
         <item>10km</item>
     </string-array>
+        <string name="register">Register</string>
+        <string name="login">Login</string>
+        <string name="nickname">Nickname</string>
+        <string name="email">Email</string>
+        <string name="password">Password</string>
+        <string name="cancel">Cancel</string>
+        <string name="logout">Logout</string>
+        <string name="priv">Private</string>
     
 </resources>

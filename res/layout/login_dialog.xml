@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/ScrollView01"
+ android:layout_width="wrap_content" android:layout_below="@+id/ImageView01"
+ android:layout_height="400px">
+    <LinearLayout 
+        android:id="@+id/linearLayout1"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical" >
+
+        <TextView
+            android:id="@+id/textView1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/email"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <EditText
+            android:id="@+id/loginEmail"
+            android:layout_width="280dp"
+            android:layout_height="wrap_content" >
+
+            <requestFocus />
+        </EditText>
+
+        <TextView
+            android:id="@+id/textView3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/password"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <EditText
+            android:id="@+id/loginPassword"
+            android:layout_width="280dp"
+            android:layout_height="wrap_content" 
+            android:inputType="textPassword"/>
+        
+		<AbsoluteLayout
+		    android:layout_width="match_parent"
+		    android:layout_height="140dp" >
+
+			<Button
+			    android:id="@+id/loginCancel"
+			    android:layout_width="wrap_content"
+			    android:layout_height="wrap_content"
+			    android:layout_x="210dp"
+			    android:layout_y="0dp"
+			    android:text="@string/cancel" />
+
+			<Button
+			    android:id="@+id/loginComplete"
+			    android:layout_width="68dp"
+			    android:layout_height="wrap_content"
+			    android:layout_x="139dp"
+			    android:layout_y="0dp"
+			    android:text="@string/login" />
+		
+		</AbsoluteLayout>
+    </LinearLayout>
+</ScrollView>
