@@ -199,13 +199,6 @@ public class MobiBloggerActivity extends Activity implements OnItemClickListener
 				loginDialog.setTitle("Login");
 				loginDialog.setCancelable(true);
 				
-				///////////// put as default
-				TextView email = (TextView)loginDialog.findViewById(R.id.loginEmail);
-				TextView password = (TextView)loginDialog.findViewById(R.id.loginPassword);
-				email.setText("mustafa.genc@inomera.com");
-				password.setText("1234");
-				/////////////////////////////
-				
 				Button cancelButton = (Button)loginDialog.findViewById(R.id.loginCancel);
 				cancelButton.setOnClickListener(new OnClickListener() {
 					@Override
