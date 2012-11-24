@@ -14,6 +14,7 @@
     </string-array>
         <string name="register">Register</string>
         <string name="login">Login</string>
+        <string name="loginTwitter">Twitter Login</string>
         <string name="nickname">Nickname</string>
         <string name="email">Email</string>
         <string name="password">Password</string>

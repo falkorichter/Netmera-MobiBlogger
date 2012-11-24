@@ -68,15 +68,23 @@ public class SquareSearch extends MapActivity implements OnClickListener {
 			double bottomLat = bottomRight.getLatitudeE6() / 1E6;
 			double bottomLon = bottomRight.getLongitudeE6() / 1E6;
 
-			NetmeraGeoLocation firstPoint = new NetmeraGeoLocation(topLat, topLon);
-			NetmeraGeoLocation secondPoint = new NetmeraGeoLocation(bottomLat, bottomLon);
+			NetmeraGeoLocation firstPoint = null;
+			NetmeraGeoLocation secondPoint = null;
+			NetmeraUser nu = null;
+			try {
+				firstPoint = new NetmeraGeoLocation(topLat, topLon);
+				secondPoint = new NetmeraGeoLocation(bottomLat, bottomLon);
+				nu = NetmeraUser.getCurrentUser();
+			} catch (NetmeraException e1) {
+				e1.printStackTrace();
+			}
 			
 			//TODO : spinner ?
-			if (NetmeraUser.getCurrentUser() != null) {
+			if (nu != null && firstPoint != null && secondPoint != null) {
 				NetmeraService netmeraService = new NetmeraService(GeneralConstants.DATA_TABLE_NAME);
 				
 				netmeraService.whereEqual(GeneralConstants.KEY_PRIVACY, GeneralConstants.PRIVACY_PRIVATE);
-				netmeraService.whereEqual(GeneralConstants.KEY_OWNER, NetmeraUser.getCurrentUser().getEmail());
+				netmeraService.whereEqual(GeneralConstants.KEY_OWNER, nu.getEmail());
 				
 				try {
 					List<NetmeraContent> resultList = netmeraService.boxSearch(firstPoint, secondPoint, "location");

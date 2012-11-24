@@ -145,14 +145,20 @@ public class LocationSearch extends MapActivity implements OnClickListener {
 				distance = 10;
 			}
 			
-			NetmeraGeoLocation ngl = new NetmeraGeoLocation(latitude, longitude);
+			NetmeraGeoLocation ngl = null;
+			NetmeraUser nu = null;
+			try {
+				ngl = new NetmeraGeoLocation(latitude, longitude);
+				nu = NetmeraUser.getCurrentUser();
+			} catch (NetmeraException e1) {
+				e1.printStackTrace();
+			}
 			
-			//TODO : spinner
-			if (NetmeraUser.getCurrentUser() != null) {
+			if (nu != null) {
 				NetmeraService netmeraService = new NetmeraService(GeneralConstants.DATA_TABLE_NAME);
 				
 				netmeraService.whereEqual(GeneralConstants.KEY_PRIVACY, GeneralConstants.PRIVACY_PRIVATE);
-				netmeraService.whereEqual(GeneralConstants.KEY_OWNER, NetmeraUser.getCurrentUser().getEmail());
+				netmeraService.whereEqual(GeneralConstants.KEY_OWNER, nu.getEmail());
 				
 				try {
 					List<NetmeraContent> resultList = netmeraService.circleSearch(ngl, distance, "location");
@@ -218,7 +224,6 @@ public class LocationSearch extends MapActivity implements OnClickListener {
 						titleList.add(globalNetmeraContentList.get(i).getString("title"));
 					} 
 				} catch (Exception e) {
-					//TODO : Toast
 					System.out.println("Circular search data is missing!");
 				}
 				try {

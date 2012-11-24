@@ -81,7 +81,6 @@ public class ViewContent extends Activity implements OnClickListener {
 		editButton.setOnClickListener(this);
 
 		path = (String) getIntent().getExtras().get(GeneralConstants.KEY_PATH);
-		NetmeraClient.init(getApplicationContext(), GeneralConstants.SECURITY_KEY);
 		// get the content service with mobiblogger
 		NetmeraService service = new NetmeraService(GeneralConstants.DATA_TABLE_NAME);
 		service.setPath(path);
@@ -188,7 +187,6 @@ public class ViewContent extends Activity implements OnClickListener {
 		super.onResume();
 		images = new ArrayList<Bitmap>();
 		path = (String) getIntent().getExtras().get(GeneralConstants.KEY_PATH);
-		NetmeraClient.init(getApplicationContext(), GeneralConstants.SECURITY_KEY);
 
 		NetmeraService service = new NetmeraService(GeneralConstants.DATA_TABLE_NAME);
 		service.setPath(path);

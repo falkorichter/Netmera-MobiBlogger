@@ -49,7 +49,9 @@ import com.netmera.mobile.NetmeraCallback;
 import com.netmera.mobile.NetmeraClient;
 import com.netmera.mobile.NetmeraContent;
 import com.netmera.mobile.NetmeraException;
+import com.netmera.mobile.NetmeraPushService;
 import com.netmera.mobile.NetmeraService;
+import com.netmera.mobile.NetmeraTwitterUtils;
 import com.netmera.mobile.NetmeraUser;
 import com.netmera.mobile.util.StringUtils;
 
@@ -67,6 +69,7 @@ public class MobiBloggerActivity extends Activity implements OnItemClickListener
 	private Button locationSearchButton;
 	private Button registerButton;
 	private Button loginButton;
+	private Button loginTwitterButton;
 	private Dialog registerDialog;
 	private Dialog loginDialog;
 	
@@ -74,21 +77,38 @@ public class MobiBloggerActivity extends Activity implements OnItemClickListener
 	
 	private List<NetmeraContent> globalNetmeraContentList = new ArrayList<NetmeraContent>();
 	private List<String> listArray = new ArrayList<String>();
-	private NetmeraUser currentUser;
+	private NetmeraUser currentUser = null;
 
 	private boolean isSearchedSth = false;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		currentUser = NetmeraUser.getCurrentUser();
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
+		
+		//Setting up netmera cloud application to my mobile application
+		NetmeraClient.init(getApplicationContext(), GeneralConstants.NETMERA_API_KEY);
+		try {
+			//Setting up push notifaction 
+			NetmeraPushService.register(getApplicationContext(), MobiBloggerActivity.class, GeneralConstants.GOOGLE_API_KEY);
+			
+			//Setting up twitterApi
+			NetmeraTwitterUtils.initialize(GeneralConstants.TWITTER_CONSUMER_KEY, GeneralConstants.TWITTER_CONSUMER_SECRET);
+		} catch (NetmeraException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		try {
+			currentUser = NetmeraUser.getCurrentUser();
+		} catch (NetmeraException e) {
+			e.printStackTrace();
+		}
 		
 		this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
 		listView = (ListView) findViewById(R.id.listView1);
 
-		NetmeraClient.init(getApplicationContext(), GeneralConstants.SECURITY_KEY);
 		adapter = new ArrayAdapter<String>(getBaseContext(), android.R.layout.simple_list_item_1, listArray);
 		
 		// Setting UI attributes
@@ -96,6 +116,10 @@ public class MobiBloggerActivity extends Activity implements OnItemClickListener
 		
 		loginButton = (Button) findViewById(R.id.login);
 		loginButton.setOnClickListener(this);
+	
+		loginTwitterButton = (Button) findViewById(R.id.loginTwitter);
+		loginTwitterButton.setOnClickListener(this);
+		
 		registerButton = (Button) findViewById(R.id.register);
 		registerButton.setOnClickListener(this);
 		
@@ -191,7 +215,12 @@ public class MobiBloggerActivity extends Activity implements OnItemClickListener
 			
 			registerDialog.show();
 		} else if (button == loginButton) {
-			NetmeraUser user= NetmeraUser.getCurrentUser();
+			NetmeraUser user = null;
+			try {
+				user = NetmeraUser.getCurrentUser();
+			} catch (NetmeraException e) {
+				e.printStackTrace();
+			}
 			
 			if (user == null) {
 				loginDialog = new Dialog(this);
@@ -222,7 +251,11 @@ public class MobiBloggerActivity extends Activity implements OnItemClickListener
 								@Override
 								public void callback(NetmeraUser user, NetmeraException exception) {
 									if (user != null) {
-										currentUser = NetmeraUser.getCurrentUser();
+										try {
+											currentUser = NetmeraUser.getCurrentUser();
+										} catch (NetmeraException e) {
+											e.printStackTrace();
+										}
 										addBlogButton.setEnabled(true);
 										loginButton.setText(R.string.logout);
 										
@@ -259,6 +292,25 @@ public class MobiBloggerActivity extends Activity implements OnItemClickListener
 				
 				updateList();
 			}
+		}  else if (button == loginTwitterButton) {
+			NetmeraTwitterUtils.login(this, new NetmeraCallback<NetmeraUser>() {
+			    @Override
+			    public void callback(NetmeraUser user, NetmeraException exception) {
+			        if (user == null) {
+			            //fail
+			        	Toast toast = Toast.makeText(getBaseContext(), "Fail Twitter Login", Toast.LENGTH_SHORT);
+						toast.show();
+			        } else if (user.isNewUser()) {
+			            //user is newly created via Twitter
+			        	TextView emailText = (TextView)findViewById(R.id.emailText);
+						emailText.setText(user.getEmail());
+			        } else {
+			            //already registered user. its only logged in
+			        	TextView emailText = (TextView)findViewById(R.id.emailText);
+						emailText.setText(user.getEmail());
+			        }
+			    }
+			});
 		}
 	}
 

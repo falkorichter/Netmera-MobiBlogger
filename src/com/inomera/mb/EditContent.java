@@ -109,7 +109,6 @@ public class EditContent extends Activity implements OnClickListener {
 
 		// Get data via api
 		path = (String) getIntent().getExtras().get(GeneralConstants.KEY_PATH);
-		NetmeraClient.init(getApplicationContext(), GeneralConstants.SECURITY_KEY);
 		NetmeraService cs = new NetmeraService(GeneralConstants.DATA_TABLE_NAME);
 		cs.setPath(path);
 

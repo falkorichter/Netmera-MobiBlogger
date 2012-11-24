@@ -30,6 +30,7 @@ import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -102,8 +103,6 @@ public class AddContent extends Activity implements OnClickListener {
 
 		this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
-		initAPI();
-
 		// Setting UI attributes
 		submitButton = (Button) findViewById(R.id.buttonSubmit);
 		submitButton.setOnClickListener(this);
@@ -141,10 +140,6 @@ public class AddContent extends Activity implements OnClickListener {
 
 		// Register the listener with the Location Manager to receive location updates
 		locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
-	}
-
-	private void initAPI() {
-		NetmeraClient.init(getApplicationContext(), GeneralConstants.SECURITY_KEY);
 	}
 
 	@Override
@@ -214,8 +209,8 @@ public class AddContent extends Activity implements OnClickListener {
 		String address = getAddress();
 		NetmeraContent netmeraContent = new NetmeraContent(GeneralConstants.DATA_TABLE_NAME);
 		// create a netmeraGeoLocationObject from latitude and longitude
-		NetmeraGeoLocation ngl = new NetmeraGeoLocation(latitude, longitude);
 		try {
+			NetmeraGeoLocation ngl = new NetmeraGeoLocation(latitude, longitude);
 			// add title and description to content context object
 			isPrivateCheckBox = (CheckBox)findViewById(R.id.isPrivate);
 			if (isPrivateCheckBox.isChecked()) {

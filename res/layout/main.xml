@@ -2,16 +2,15 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:orientation="vertical" >
-
-    <RelativeLayout
+    android:orientation="vertical">
+    <RelativeLayout
         android:id="@+id/relativeLayout2"
         android:layout_width="match_parent"
         android:layout_height="34dp" >
 
 		<AbsoluteLayout
 		    android:id="@+id/absoluteLayout"
-		    android:layout_width="188dp"
+		    android:layout_width="110dp"
 		    android:layout_height="34dp" >
 
 		    <TextView
@@ -33,13 +32,21 @@
             android:text="@string/login" />
 
         <Button
-            android:layout_marginRight="5px"
             android:id="@+id/register"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
-            android:layout_toLeftOf="@+id/login"
+            android:layout_toRightOf="@+id/absoluteLayout"
             android:text="@string/register" />
+
+        <Button
+            android:id="@+id/loginTwitter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_toLeftOf="@+id/login"
+            android:layout_toRightOf="@+id/register"
+            android:text="@string/loginTwitter" />
 
     </RelativeLayout>
 
