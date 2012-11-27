@@ -147,7 +147,7 @@ public class AddContent extends Activity implements OnClickListener {
 		if (clickedItem == submitButton) {
 			progressBarStatus = 0;
 			// set progress dialog
-			final ProgressDialog dialog = ProgressDialog.show(this, "", "Loading", false);
+//			final ProgressDialog dialog = ProgressDialog.show(this, "", "Loading", false);
 			new Thread(new Runnable() {
 				public void run() {
 					while (progressBarStatus < 100) {
@@ -170,7 +170,6 @@ public class AddContent extends Activity implements OnClickListener {
 						super.handleMessage(msg);
 						Intent intent = new Intent();
 						intent.putExtra(GeneralConstants.KEY_TITLE, title.getText().toString());
-						dialog.dismiss();
 						if (getParent() == null) {
 							setResult(RESULT_OK, intent);
 						} else {
@@ -242,7 +241,6 @@ public class AddContent extends Activity implements OnClickListener {
 			netmeraContent.create();
 		} catch (NetmeraException e) {
 			e.printStackTrace();
-			Toast.makeText(this, "Error while saving data", Toast.LENGTH_SHORT).show();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

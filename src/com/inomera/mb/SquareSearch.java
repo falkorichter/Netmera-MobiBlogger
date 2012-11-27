@@ -17,6 +17,7 @@ import com.google.android.maps.MapView;
 import com.google.android.maps.Overlay;
 import com.google.android.maps.Projection;
 import com.inomera.mb.constans.GeneralConstants;
+import com.netmera.mobile.NetmeraCallback;
 import com.netmera.mobile.NetmeraContent;
 import com.netmera.mobile.NetmeraException;
 import com.netmera.mobile.NetmeraGeoLocation;
@@ -78,62 +79,80 @@ public class SquareSearch extends MapActivity implements OnClickListener {
 			} catch (NetmeraException e1) {
 				e1.printStackTrace();
 			}
-			
+			final NetmeraGeoLocation firstPointMap = firstPoint;
+			final NetmeraGeoLocation secondPointMap = secondPoint;
+
 			//TODO : spinner ?
 			if (nu != null && firstPoint != null && secondPoint != null) {
 				NetmeraService netmeraService = new NetmeraService(GeneralConstants.DATA_TABLE_NAME);
-				
+
 				netmeraService.whereEqual(GeneralConstants.KEY_PRIVACY, GeneralConstants.PRIVACY_PRIVATE);
 				netmeraService.whereEqual(GeneralConstants.KEY_OWNER, nu.getEmail());
-				
-				try {
-					List<NetmeraContent> resultList = netmeraService.boxSearch(firstPoint, secondPoint, "location");
-					
-					for (NetmeraContent netmeraContent : resultList) {
+
+				netmeraService.boxSearchInBackground(firstPoint, secondPoint, "location", new NetmeraCallback< List< NetmeraContent>>() {
+					@Override
+					public void callback(List< NetmeraContent> contentList, NetmeraException exception) {
+						if (contentList != null && exception == null) {
+							// Success
+							for (NetmeraContent netmeraContent : contentList) {
+								globalNetmeraContentList.add(netmeraContent);
+							}
+
+							searchBlogWithoutUser(firstPointMap, secondPointMap);
+						} else {
+							// Error occurred.
+						}           
+					}
+				});
+			} 
+
+		}
+	}
+
+	private void searchBlogWithoutUser(NetmeraGeoLocation firstPoint, NetmeraGeoLocation secondPoint){
+		NetmeraService netmeraService = new NetmeraService(GeneralConstants.DATA_TABLE_NAME);
+		netmeraService.whereEqual(GeneralConstants.KEY_PRIVACY, GeneralConstants.PRIVACY_PUBLIC);
+
+		netmeraService.boxSearchInBackground(firstPoint, secondPoint, "location", new NetmeraCallback< List< NetmeraContent>>() {
+			@Override
+			public void callback(List< NetmeraContent> contentList, NetmeraException exception) {
+				if (contentList != null && exception == null) {
+					// Success
+					for (NetmeraContent netmeraContent : contentList) {
 						globalNetmeraContentList.add(netmeraContent);
 					}
-				} catch (NetmeraException e) {
-					e.printStackTrace();
-				}
-			} 
-			
-			NetmeraService netmeraService = new NetmeraService(GeneralConstants.DATA_TABLE_NAME);
-			netmeraService.whereEqual(GeneralConstants.KEY_PRIVACY, GeneralConstants.PRIVACY_PUBLIC);
-			
+					returnIntent();
+				} else {
+					// Error occurred.
+				}           
+			}
+		});
+	}
+	
+	private void returnIntent(){
+		Intent intent = new Intent();
+
+		intent.putExtra("zoomLevel", mapView.getZoomLevel());
+		intent.putExtra("mapCenterLatitude", mapView.getMapCenter().getLatitudeE6());
+		intent.putExtra("mapCenterLongitude", mapView.getMapCenter().getLongitudeE6());
+		intent.putExtra("resultSize", globalNetmeraContentList.size());
+
+		for (int i = 0; i < globalNetmeraContentList.size(); i++) {
 			try {
-				List<NetmeraContent> resultList = netmeraService.boxSearch(firstPoint, secondPoint, "location");
-				
-				for (NetmeraContent netmeraContent : resultList) {
-					globalNetmeraContentList.add(netmeraContent);
-				}
+				intent.putExtra("resultTitle" + i, globalNetmeraContentList.get(i).getString("title"));
+				intent.putExtra("resultPath" + i, globalNetmeraContentList.get(i).getPath());
+				intent.putExtra("resultDescription" + i, globalNetmeraContentList.get(i).getString("description"));
+				NetmeraGeoLocation geoLoc = globalNetmeraContentList.get(i).getNetmeraGeoLocation("location");
+
+				intent.putExtra("resultLatitude" + i, geoLoc.getLatitude());
+				intent.putExtra("resultLongitude" + i, geoLoc.getLongitude());
 			} catch (NetmeraException e) {
 				e.printStackTrace();
 			}
-			
-			Intent intent = new Intent();
-			
-			intent.putExtra("zoomLevel", mapView.getZoomLevel());
-			intent.putExtra("mapCenterLatitude", mapView.getMapCenter().getLatitudeE6());
-			intent.putExtra("mapCenterLongitude", mapView.getMapCenter().getLongitudeE6());
-			intent.putExtra("resultSize", globalNetmeraContentList.size());
-			
-			for (int i = 0; i < globalNetmeraContentList.size(); i++) {
-				try {
-					intent.putExtra("resultTitle" + i, globalNetmeraContentList.get(i).getString("title"));
-					intent.putExtra("resultPath" + i, globalNetmeraContentList.get(i).getPath());
-					intent.putExtra("resultDescription" + i, globalNetmeraContentList.get(i).getString("description"));
-					NetmeraGeoLocation geoLoc = globalNetmeraContentList.get(i).getNetmeraGeoLocation("location");
-					
-					intent.putExtra("resultLatitude" + i, geoLoc.getLatitude());
-					intent.putExtra("resultLongitude" + i, geoLoc.getLongitude());
-				} catch (NetmeraException e) {
-					e.printStackTrace();
-				}
-			}
-
-			setResult(RESULT_OK, intent);
-
-			finish();
 		}
+
+		setResult(RESULT_OK, intent);
+
+		finish();
 	}
 }

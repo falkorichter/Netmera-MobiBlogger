@@ -46,7 +46,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.inomera.mb.constans.GeneralConstants;
-import com.netmera.mobile.NetmeraClient;
+import com.netmera.mobile.NetmeraCallback;
 import com.netmera.mobile.NetmeraContent;
 import com.netmera.mobile.NetmeraException;
 import com.netmera.mobile.NetmeraMedia;
@@ -84,43 +84,55 @@ public class ViewContent extends Activity implements OnClickListener {
 		// get the content service with mobiblogger
 		NetmeraService service = new NetmeraService(GeneralConstants.DATA_TABLE_NAME);
 		service.setPath(path);
-		NetmeraContent ctx;
-		try {
-			// get content context from the service
-			ctx = service.get();
-			context = ctx;
-			TextView titleText = (TextView) findViewById(R.id.titleText);
-			TextView contentText = (TextView) findViewById(R.id.contentText);
-			// set values for UI elements
-			titleText.setText(ctx.getString(GeneralConstants.KEY_TITLE));
-			contentText.setText(ctx.getString(GeneralConstants.KEY_DESCRIPTION));
-		} catch (NetmeraException e) {
-			e.printStackTrace();
-		}
+		service.getInBackground(new NetmeraCallback < NetmeraContent>() {
+			@Override
+			public void callback(NetmeraContent result, NetmeraException exception) {
+				if (result != null && exception == null) {
+					// Success
+					try {
+						context = result;
+						TextView titleText = (TextView) findViewById(R.id.titleText);
+						TextView contentText = (TextView) findViewById(R.id.contentText);
+						// set values for UI elements
+						titleText.setText(result.getString(GeneralConstants.KEY_TITLE));
+						contentText.setText(result.getString(GeneralConstants.KEY_DESCRIPTION));
+						displayContent(context);
+					} catch (NetmeraException ex) {
+						// Handle exception
+					}
+				} else {
+					// Error occurred.
+				}
+			}
+		});
+	}
 
-		// reset progress bar status
-		progressBarStatus = 0;
-		// start progress dialog
-		final ProgressDialog dialog = ProgressDialog.show(this, "", "Loading", false);
+	private int displayContent(final NetmeraContent ctx) {
+
 
 		new Thread(new Runnable() {
 			public void run() {
-				while (progressBarStatus < 100) {
-					// process fetching content
-					progressBarStatus = displayContent(context);
-					// Update the progress bar
-					progressBarHandler.post(new Runnable() {
-						public void run() {
-							// progressBar.setProgress(progressBarStatus);
+				// display images
+				int mediaCount = 0;
+				try {
+					while (ctx.get("file" + mediaCount) != null) {
+						if (ctx.getString("file" + mediaCount).length() != 7) {
+							NetmeraMedia media = ctx.getNetmeraMedia("file" + mediaCount);
+							byte[] imageBytes = media.getData();
+							Bitmap bmp = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+							images.add(bmp);
 						}
-					});
+						mediaCount++;
+					}
+				} catch (NetmeraException e) {
+					e.printStackTrace();
 				}
 				// when the operation is finished, send message with handler
 				handler.sendEmptyMessage(0);
 			}
 
 			private Handler handler = new Handler() {
-				// get message from handler, exit the new thread and retrn to
+				// get message from handler, exit the new thread and return to
 				// display view
 				@Override
 				public void handleMessage(Message msg) {
@@ -129,28 +141,10 @@ public class ViewContent extends Activity implements OnClickListener {
 					myAdapter.setImages(images);
 					GridView gridview = (GridView) findViewById(R.id.gridPhotos);
 					gridview.setAdapter(myAdapter);
-					dialog.dismiss();
 				}
 			};
 		}).start();
-	}
 
-	private int displayContent(NetmeraContent ctx) {
-		try {
-			int mediaCount = 0;
-			// display images
-			while (ctx.get("file" + mediaCount) != null) {
-				if (ctx.getString("file" + mediaCount).length() != 7) {
-					NetmeraMedia media = ctx.getNetmeraMedia("file" + mediaCount);
-					byte[] imageBytes = media.getData();
-					Bitmap bmp = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
-					images.add(bmp);
-				}
-				mediaCount++;
-			}
-		} catch (NetmeraException e) {
-			e.printStackTrace();
-		}
 		return 100;
 	}
 
@@ -190,56 +184,27 @@ public class ViewContent extends Activity implements OnClickListener {
 
 		NetmeraService service = new NetmeraService(GeneralConstants.DATA_TABLE_NAME);
 		service.setPath(path);
-		NetmeraContent ctx;
-		try {
-			ctx = service.get();
-			context = ctx;
-			TextView titleText = (TextView) findViewById(R.id.titleText);
-			TextView contentText = (TextView) findViewById(R.id.contentText);
-
-			titleText.setText(ctx.getString(GeneralConstants.KEY_TITLE));
-			contentText.setText(ctx.getString(GeneralConstants.KEY_DESCRIPTION));
-		} catch (NetmeraException e) {
-			e.printStackTrace();
-		}
-
-		// reset progress bar status
-		progressBarStatus = 0;
-		// start progress dialog
-		final ProgressDialog dialog = ProgressDialog.show(this, "", "Loading", false);
-
-		new Thread(new Runnable() {
-			public void run() {
-				while (progressBarStatus < 100) {
-					// process fetching content
-					progressBarStatus = displayContent(context);
-					// Update the progress bar
-					progressBarHandler.post(new Runnable() {
-						public void run() {
-							// progressBar.setProgress(progressBarStatus);
-						}
-					});
+		service.getInBackground(new NetmeraCallback < NetmeraContent>() {
+			@Override
+			public void callback(NetmeraContent result, NetmeraException exception) {
+				if (result != null && exception == null) {
+					// Success
+					try {
+						context = result;
+						TextView titleText = (TextView) findViewById(R.id.titleText);
+						TextView contentText = (TextView) findViewById(R.id.contentText);
+						// set values for UI elements
+						titleText.setText(result.getString(GeneralConstants.KEY_TITLE));
+						contentText.setText(result.getString(GeneralConstants.KEY_DESCRIPTION));
+						displayContent(context);
+					} catch (NetmeraException ex) {
+						// Handle exception
+					}
+				} else {
+					// Error occurred.
 				}
-				// when fetching finishes, end the new thread and send message
-				// with handler
-				handler.sendEmptyMessage(0);
 			}
-
-			private Handler handler = new Handler() {
-				// process message from handler, and display updated content
-				@Override
-				public void handleMessage(Message msg) {
-					super.handleMessage(msg);
-
-					ImageAdapter myAdapter = new ImageAdapter(ViewContent.this);
-					myAdapter.setImages(images);
-					myAdapter.notifyDataSetChanged();
-					GridView gridview = (GridView) findViewById(R.id.gridPhotos);
-					gridview.setAdapter(myAdapter);
-					dialog.dismiss();
-				}
-			};
-		}).start();
+		});
 	}
 
 	public class ImageAdapter extends BaseAdapter {
@@ -268,7 +233,7 @@ public class ViewContent extends Activity implements OnClickListener {
 			final Bitmap zoomBitmap = pics.get(position);
 			ImageView imageView;
 			if (convertView == null) { // if it's not recycled, initialize some
-										// attributes
+				// attributes
 				imageView = new ImageView(mContext);
 				imageView.setLayoutParams(new GridView.LayoutParams(85, 85));
 				imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);

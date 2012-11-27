@@ -47,12 +47,16 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.inomera.mb.ViewContent.ImageAdapter;
 import com.inomera.mb.constans.GeneralConstants;
+import com.netmera.mobile.NetmeraCallback;
 import com.netmera.mobile.NetmeraClient;
 import com.netmera.mobile.NetmeraContent;
 import com.netmera.mobile.NetmeraException;
@@ -109,77 +113,71 @@ public class EditContent extends Activity implements OnClickListener {
 
 		// Get data via api
 		path = (String) getIntent().getExtras().get(GeneralConstants.KEY_PATH);
-		NetmeraService cs = new NetmeraService(GeneralConstants.DATA_TABLE_NAME);
-		cs.setPath(path);
+		NetmeraService service = new NetmeraService(GeneralConstants.DATA_TABLE_NAME);
+		service.setPath(path);
+		service.getInBackground(new NetmeraCallback < NetmeraContent>() {
+			@Override
+			public void callback(NetmeraContent result, NetmeraException exception) {
+				if (result != null && exception == null) {
+					// Success
+					try {
+						context = result;
+						title.setText(result.getString(GeneralConstants.KEY_TITLE));
+						description.setText(result.getString(GeneralConstants.KEY_DESCRIPTION));
+						displayContent(context);
+					} catch (NetmeraException ex) {
+						// Handle exception
+					}
+				} else {
+					// Error occurred.
+				}
+			}
+		});
 
-		try {
-			NetmeraContent cc = cs.get();
-			context = cc;
-			title.setText(cc.getString(GeneralConstants.KEY_TITLE));
-			description.setText(cc.getString(GeneralConstants.KEY_DESCRIPTION));
-		} catch (NetmeraException e) {
-			e.printStackTrace();
-		}
+	}
+	
+	private int displayContent(final NetmeraContent ctx) {
 
-		// start progress dialog
-		final ProgressDialog dialog = ProgressDialog.show(this, "", "Loading", false);
+
 		new Thread(new Runnable() {
 			public void run() {
-				while (progressBarStatus < 100) {
-					// process fetching content
-					progressBarStatus = displayContent(context);// progressBarStatus
-																// =
-																// displayContent(context,
-																// globService);
-
-					// Update the progress bar
-					progressBarHandler.post(new Runnable() {
-						public void run() {
-							// progressBar.setProgress(progressBarStatus);
+				// display images
+				try {
+					int mediaCount = 0;
+					while (ctx.get("file" + mediaCount) != null) {
+						if (ctx.getString("file" + mediaCount).length() != 7) {
+							NetmeraMedia media = ctx.getNetmeraMedia("file" + mediaCount);
+							// String url = media.getUrl(NetmeraMedia.PhotoSize.SMALL);
+							byte[] imageBytes = media.getData();
+							Bitmap bmp = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+							images.add(bmp);
+							imageIndexes.add(mediaCount);
 						}
-					});
+						mediaCount++;
+						numberOfPhotos = mediaCount;
+					}
+				} catch (NetmeraException e) {
+					e.printStackTrace();
 				}
 				// when the operation is finished, send message with handler
 				handler.sendEmptyMessage(0);
 			}
 
 			private Handler handler = new Handler() {
-				// get message from handler, exit the new thread and retrn to
+				// get message from handler, exit the new thread and return to
 				// display view
 				@Override
 				public void handleMessage(Message msg) {
 					super.handleMessage(msg);
-
 					for (int i = 0; i < images.size(); i++) {
 						ImageView iv = new ImageView(EditContent.this);
 						iv.setImageBitmap(images.get(i));
 						placeImageView(iv, images.get(i), imageIndexes.get(i));
 					}
-					dialog.dismiss();
 				}
 			};
 		}).start();
-	}
 
-	private int displayContent(NetmeraContent ctx) {
-		try {
-			// display images
-			int mediaCount = 0;
-			while (ctx.get("file" + mediaCount) != null) {
-				if (ctx.getString("file" + mediaCount).length() != 7) {
-					NetmeraMedia media = ctx.getNetmeraMedia("file" + mediaCount);
-					// String url = media.getUrl(NetmeraMedia.PhotoSize.SMALL);
-					byte[] imageBytes = media.getData();
-					Bitmap bmp = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
-					images.add(bmp);
-					imageIndexes.add(mediaCount);
-				}
-				mediaCount++;
-				numberOfPhotos = mediaCount;
-			}
-		} catch (NetmeraException e) {
-			e.printStackTrace();
-		}
 		return 100;
 	}
 
@@ -336,7 +334,7 @@ public class EditContent extends Activity implements OnClickListener {
 				NetmeraMedia file = new NetmeraMedia(bytes);
 				cc.add(GeneralConstants.KEY_PHOTOS + i, file);
 			}
-			cc.update();
+			cc.updateInBackground();
 		} catch (NetmeraException e) {
 			e.printStackTrace();
 			Toast.makeText(this, "Error while removing data", Toast.LENGTH_SHORT).show();
